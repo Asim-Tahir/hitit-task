@@ -9,7 +9,7 @@
     - [Compiles and minifies for production](#compiles-and-minifies-for-production)
 
 ## 👀 Screenshot of Project
-
+![image](https://user-images.githubusercontent.com/29407019/101965163-c108ca00-3c24-11eb-83d5-ecf74b465fa0.png)
 <br>
 
 ## 📐Used Technologies
