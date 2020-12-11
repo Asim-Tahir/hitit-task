@@ -1,0 +1,110 @@
+version: "3.7"
+
+services:
+  vue-cli:
+    container_name: youcuz-vue-cli
+    image: youcuz:vue-cli
+    volumes:
+      - .:/app
+    working_dir: /app
+    networks:
+      - net
+    build:
+      context: ./.docker/nodejs/
+      target: vue-cli-stage
+    command:
+      - sh
+      - -c "while sleep 1000;
+      - do :;
+      - done"
+
+  vue-ui:
+    container_name: youcuz-dev
+    image: youcuz:dev
+    volumes:
+      - .:/app
+    working_dir: /app
+    networks:
+      - net
+    build:
+      context: ./.docker/nodejs/
+      target: vue-cli-stage
+    expose:
+      - 8000
+    ports:
+      - 8000:8000
+    command:
+      - vue
+      - ui
+      - --headless
+      - --port 8000
+      - --host 0.0.0.0
+
+  fe-init:
+    container_name: youcuz-fe-init
+    image: node:15.0-alpine
+    volumes:
+      - .:/app
+    working_dir: /app
+    networks:
+      - net
+    command:
+      - yarn
+      - install
+
+  fe:
+    container_name: youcuz-fe-app
+    image: youcuz:fe-app
+    volumes:
+      - .:/app
+    working_dir: /app
+    networks:
+      - net
+    build:
+      context: ./.docker/nodejs/
+      target: vue-cli-stage
+    expose:
+      - 8080
+    ports:
+      - 8080:8080
+    #For local docker-compose development enviroment
+    command:
+      - yarn
+      - serve
+    #For codespaces or devcontanier development enviroment
+    # command: /bin/sh -c "while sleep 1000; do :; done"
+
+  fe-build:
+    container_name: youcuz-fe-build
+    image: node:15.0-alpine
+    volumes:
+      - .:/app
+    working_dir: /app
+    networks:
+      - net
+    command:
+      - yarn
+      - build
+
+  fe-prod:
+    container_name: youcuz-prod
+    image: nginx:stable-alpine
+    depends_on:
+      - fe-build
+    working_dir: /usr/share/nginx/html
+    volumes:
+      - ./dist:/usr/share/nginx/html
+      - ./.docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - net
+    expose:
+      - 80
+    ports:
+      - 9090:80
+    command:
+      - nginx
+      - -g
+      - daemon off;
+
+networks:
+  net:
